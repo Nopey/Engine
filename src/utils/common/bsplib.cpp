@@ -11,16 +11,16 @@
 #include "bsplib.h"
 #include "zip_utils.h"
 #include "scriplib.h"
-#include "UtlLinkedList.h"
-#include "BSPTreeData.h"
-#include "CModel.h"
-#include "GameBSPFile.h"
+#include "utllinkedlist.h"
+#include "bsptreedata.h"
+#include "cmodel.h"
+#include "gamebspfile.h"
 #include "materialsystem/imaterial.h"
 #include "materialsystem/hardwareverts.h"
-#include "UtlBuffer.h"
-#include "UtlRBTree.h"
-#include "UtlSymbol.h"
-#include "UtlString.h"
+#include "utlbuffer.h"
+#include "utlrbtree.h"
+#include "utlsymbol.h"
+#include "utlstring.h"
 #include "checksum_crc.h"
 #include "physdll.h"
 #include "tier0/dbg.h"
@@ -3829,7 +3829,7 @@ const char *ResolveStaticPropToModel( const char *pPropName )
 //-----------------------------------------------------------------------------
 void ConvertPakFileContents( const char *pInFilename )
 {
-	IZip *newPakFile = IZip::CreateZip( false );
+	IZip *newPakFile = IZip::CreateZip( NULL );
 
 	CUtlBuffer sourceBuf;
 	CUtlBuffer targetBuf;

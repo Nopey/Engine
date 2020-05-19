@@ -779,14 +779,16 @@ qboolean GetTokenizerStatus( char **pFilename, int *pLine )
 
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef PLATFORM_WINDOWS
 #include <direct.h>
 #include <io.h>
+#include <sys/utime.h>
+#endif
 #include <time.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/utime.h>
-#include "tier1/UtlBuffer.h"
+#include "tier1/utlbuffer.h"
 
 class CScriptLib : public IScriptLib
 {
@@ -865,7 +867,12 @@ bool CScriptLib::WriteBufferToFile( const char *pTargetName, CUtlBuffer &buffer,
 		if ( ptr )
 		{
 			*ptr = '\0';
+			//TODO: Maybe switch to CreateDirHierarchy?
+#if defined( _WIN32 )
 			mkdir( dirPath );
+#elif defined( _LINUX )
+			mkdir( dirPath, S_IRWXU |  S_IRGRP |  S_IROTH );
+#endif
 			*ptr = '\\';
 		}
 	}

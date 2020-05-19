@@ -1017,6 +1017,41 @@ void *ThreadInterlockedCompareExchangePointer( void * volatile *pDest, void *val
 }
 
 
+#if defined( POSIX ) && defined( PLATFORM_64BITS )
+// Thanks to jkriegshauser for writing this function
+// https://gist.github.com/lionello/9166483
+static bool InterlockedCompareExchange128(long long volatile* Destination, long long ExchangeHigh, long long ExchangeLow, long long *ComparandResult)
+{
+    bool success;
+    __asm__ __volatile__
+    (
+        "lock cmpxchg16b %3"
+        : "=@ccz" (success)
+        , "=a" (ComparandResult[0])
+        , "=d" (ComparandResult[1])
+        , "+m" (*Destination)
+        : "b" (ExchangeLow)
+        , "c" (ExchangeHigh)
+        , "a" (ComparandResult[0])
+        , "d" (ComparandResult[1])
+        , "m" (*Destination)
+        : "cc"
+    );
+    return success;
+}
+
+bool ThreadInterlockedAssignIf128( int128 volatile * pDest, const int128 &value, const int128 &comparand ) 
+{
+    // TODO: Implement POSIX ThreadInterlockedAssignIf128
+	Assert((size_t)pDest % 16 == 0); // Alignment check
+	int128 comp = comparand;
+	return (bool)InterlockedCompareExchange128((int64*)pDest, *(int64*)( &value + 1 ), *(int64*)&value, (int64*)&comp);
+}
+
+
+
+#endif
+
 int64 ThreadInterlockedCompareExchange64( int64 volatile *pDest, int64 value, int64 comperand )
 {
 	Assert( (size_t)pDest % 8 == 0 );

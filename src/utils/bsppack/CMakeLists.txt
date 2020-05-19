@@ -9,7 +9,15 @@ project(bsppack C CXX)
 set(WINDOWS_SRCS	)
 set(POSIX_SRCS		)
 
-set(SRCS			)
+set(SRCS            "${PUBLIC}/filesystem_helpers.cpp"
+                    "${PUBLIC}/filesystem_init.cpp"
+                    "${PUBLIC}/lumpfiles.cpp"
+                    "${PUBLIC}/zip_utils.cpp"
+                    "${UTILS_COMMON}/bsplib.cpp"
+		            "${UTILS_COMMON}/filesystem_tools.cpp"
+                    "${UTILS_COMMON}/cmdlib.cpp"
+                    # "${UTILS_COMMON}/scriplib.cpp"
+                    )
 
 file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/ *.c *.cpp *.cc)
 list(APPEND SRCS ${SOURCES})
@@ -41,7 +49,7 @@ set(POSIX64_LINK_DIRS	)
 set(LINK_LIBS			)
 
 # Other projects this one depends on
-set(DEPENDENCIES 		)
+set(DEPENDENCIES            mathlib tier0 tier1 tier2)
 
 # Platform specific link libs
 set(WINDOWS_LINK_LIBS	)
@@ -51,7 +59,7 @@ set(POSIX32_LINK_LIBS	)
 set(POSIX64_LINK_LIBS	)
 
 # Generic include dirs
-set(INCLUDE_DIRS		${ROOT_DIR}/utils/common/)
+set(INCLUDE_DIRS		${UTILS_COMMON})
 
 # Platform specific includes
 set(WIN32_INCLUDE_DIRS		)

@@ -304,8 +304,10 @@ public:
 	explicit CNumStr( uint64 un64 )	{ SetUint64( un64 ); }
 
 #if defined(COMPILER_GCC) && defined(PLATFORM_64BITS)
-	explicit CNumStr( lint64 n64 )		{ SetInt64( (int64)n64 ); }
-	explicit CNumStr( ulint64 un64 )	{ SetUint64( (uint64)un64 ); }
+	//NOTE: According to this link, `lint64` and `ulint64` are just long and unsigned long
+	// https://github.com/ValveSoftware/GameNetworkingSockets/blob/master/include/steam/steamtypes.h
+	explicit CNumStr( /* lint64 */ long int n64 )		{ SetInt64( (int64)n64 ); }
+	explicit CNumStr( /* ulint64 */ unsigned long int un64 )	{ SetUint64( (uint64)un64 ); }
 #endif
 
 	explicit CNumStr( double f )	{ SetDouble( f ); }

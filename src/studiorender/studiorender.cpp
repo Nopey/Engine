@@ -60,12 +60,12 @@ CStudioRender::CStudioRender()
 	m_GlintHeight = 0;
 
 	// Cache-align our important matrices
-	g_pMemAlloc->PushAllocDbgInfo( __FILE__, __LINE__ );
+	MemAlloc_PushAllocDbgInfo( __FILE__, __LINE__ )
 
 	m_PoseToWorld = (matrix3x4_t*)MemAlloc_AllocAligned( MAXSTUDIOBONES * sizeof(matrix3x4_t), 32 );
 	m_PoseToDecal = (matrix3x4_t*)MemAlloc_AllocAligned( MAXSTUDIOBONES * sizeof(matrix3x4_t), 32 );
 
-	g_pMemAlloc->PopAllocDbgInfo();
+	MemAlloc_PopAllocDbgInfo();
 	m_nDecalId = 1;
 }
 

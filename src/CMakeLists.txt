@@ -161,6 +161,9 @@ if(DEFINED CMAKE_HOST_UNIX AND NOT UNIX_CROSS)
 		add_definitions(-DLINUX64 -D_LINUX64 -DPOSIX64 -D_POSIX64)
 		set(PLATFORM_SUBDIR posix64)
 		set(CMAKE_TOOLCHAIN_FILE "${POSIX64_TOOLCHAIN}")
+		# PIC is necessary for the static libs when they're put into a shared lib.
+		# There's probably a better place for this to live though.
+		set(CMAKE_POSITION_INDEPENDENT_CODE 1)
 	else()
 		message("Building for POSIX32")
 		set(PLATFORM_32BITS 1)

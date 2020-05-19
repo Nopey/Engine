@@ -49,7 +49,10 @@
 #include <sys/statvfs.h>
 #endif
 #include <sched.h>
-#define int64 int64_t
+
+// TODO: NOPEY: Remove this int64 define
+// defined as long long in platform.h
+// #define int64 int64_t
 
 #define _A_SUBDIR S_IFDIR
 

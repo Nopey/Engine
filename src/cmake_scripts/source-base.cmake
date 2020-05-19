@@ -8,13 +8,13 @@ set(CMAKE_CXX_STANDARD 11)
 
 if(DEFINED POSIX OR CLANG_BUILD)
 	if(NOT BUILD_64BIT)
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32" CACHE STRING "c++ flags" FORCE)
-		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32" CACHE STRING "c flags" FORCE)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32 -march=i686" CACHE STRING "c++ flags" FORCE)
+		set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32 -march=i686" CACHE STRING "c flags" FORCE)
 		set(CMAKE_LINK_FLAGS "${CMAKE_LINK_FLAGS} -m32")
 	endif(NOT BUILD_64BIT)
 	
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math -march=i686 -msse3 -g")
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffast-math -march=i686 -msse3 -g")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math -msse3 -g")
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -ffast-math -msse3 -g")
 endif()
 
 if(UNIX_CROSS)

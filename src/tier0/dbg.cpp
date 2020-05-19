@@ -275,7 +275,7 @@ static SpewRetval_t _SpewMessage( SpewType_t spewType, const char *pGroupName, i
 	
 	/* direct it to the appropriate target(s) */
 	SpewRetval_t ret;
-	assert( g_pSpewInfo == NULL );
+	assert( !g_pSpewInfo );
 	SpewInfo_t spewInfo =
 	{
 		pColor,
@@ -285,7 +285,7 @@ static SpewRetval_t _SpewMessage( SpewType_t spewType, const char *pGroupName, i
 
 	g_pSpewInfo = &spewInfo;
 	ret = s_SpewOutputFunc( spewType, pTempBuffer );
-	g_pSpewInfo = NULL;
+	g_pSpewInfo = nullptr;
 
 	switch (ret)
 	{
