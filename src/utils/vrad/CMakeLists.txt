@@ -48,12 +48,15 @@ set(SRCS	"${PUBLIC}/bsptreedata.cpp"
 			"${UTILS_COMMON}/polylib.cpp"
 			"${UTILS_COMMON}/scriplib.cpp"
 			"${UTILS_COMMON}/threads.cpp"
-			"${UTILS_COMMON}/tools_minidump.cpp"
-			"${UTILS_COMMON}/tools_minidump.h"
+			# I don't feel like porting minidump atm
+			#"${UTILS_COMMON}/tools_minidump.cpp"
+			#"${UTILS_COMMON}/tools_minidump.h"
 			"${PUBLIC}/collisionutils.cpp"
 			"${PUBLIC}/filesystem_helpers.cpp"
 			"${PUBLIC}/scratchpad3d.cpp"
-			"${PUBLIC}/ScratchPadUtils.cpp")
+			"${PUBLIC}/ScratchPadUtils.cpp"
+			#"${UTILS_COMMON}/cmdlib.cpp"
+			)
 
 #file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/ *.c *.cpp)
 #list(APPEND SRCS ${SOURCES})
@@ -85,7 +88,7 @@ set(POSIX64_LINK_DIRS	)
 set(LINK_LIBS			)
 
 # Other projects this one depends on
-set(DEPENDENCIES vstdlib tier1 tier0 tier2 tier3 tier4 appframework)
+set(DEPENDENCIES bitmap mathlib vtf vstdlib tier1 tier0 tier2 tier3 tier4 appframework)
 
 # Platform specific link libs
 set(WINDOWS_LINK_LIBS	)

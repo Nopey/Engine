@@ -1,9 +1,6 @@
 #
 # We will fix up Bullet definitions here
 #
-if(USE_SSE)
-    add_definitions(-DBT_USE_SSE=1)
-endif(USE_SSE)
 
 add_definitions(-DMBCS)
 

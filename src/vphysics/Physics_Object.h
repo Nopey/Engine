@@ -3,6 +3,7 @@
 #if defined(_MSC_VER) || (defined(__GNUC__) && __GNUC__ > 3)
 	#pragma once
 #endif
+#include <BulletCollision/CollisionDispatch/btGhostObject.h>
 
 class CPhysicsEnvironment;
 class CPhysicsVehicleController;

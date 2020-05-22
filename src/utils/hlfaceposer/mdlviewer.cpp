@@ -2330,7 +2330,7 @@ void MDLViewer::OnRebuildScenesImage()
 	bool bSuccess = g_pSceneImage->CreateSceneImageFile( targetBuffer, gamedir, bLittleEndian, false, this );
 	if ( bSuccess )
 	{
-		scriptlib->WriteBufferToFile( pFilename, targetBuffer, WRITE_TO_DISK_ALWAYS );
+		g_pFullFileSystem->WriteFile( pFileName, "wb", targetBuffer );
 	}
 
 	g_pProgressDialog->Finish();

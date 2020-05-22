@@ -11,7 +11,8 @@ set(POSIX_SRCS	)
 
 set(SRCS					)
 
-file(GLOB_RECURSE SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/ *.c *.cpp)
+# No GLOB_RECURSE, we don't always want to grab the GPU Solvers
+file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/ *.c *.cpp)
 list(APPEND SRCS ${SOURCES})
 
 # Preprocessor defs

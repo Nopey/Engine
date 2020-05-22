@@ -17,7 +17,7 @@
 #include "tier1/utlvector.h"
 #include "tier1/UtlSortVector.h"
 
-#include "scriplib.h"
+#include "utils/common/scriplib.h"
 #include "cmdlib.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -220,7 +220,8 @@ void FindSoundsInEvent( CChoreoEvent *pEvent, CUtlVector< short >& soundList )
 bool CreateTargetFile_VCD( const char *pSourceName, const char *pTargetName, bool bWriteToZip, bool bLittleEndian )
 {
 	CUtlBuffer sourceBuf;
-	if ( !scriptlib->ReadFileToBuffer( pSourceName, sourceBuf ) )
+	FileHandle_t hFile = g_pFullFileSystem->Open( pSourceName, "rb");
+	if (g_pFullFileSystem->ReadToBuffer( hFile, sourceBuf ))
 	{
 		return false;
 	}
@@ -289,27 +290,43 @@ public:
 //-----------------------------------------------------------------------------
 bool CSceneImage::CreateSceneImageFile( CUtlBuffer &targetBuffer, char const *pchModPath, bool bLittleEndian, bool bQuiet, ISceneCompileStatus *pStatus )
 {
-	CUtlVector<fileList_t>	vcdFileList;
+	CUtlVector<CUtlString>	vcdFileList;
+	CUtlVector<CUtlString>	vcdDirQueue;
 	CUtlSymbolTable			vcdSymbolTable( 0, 32, true );
 
 	Msg( "\n" );
 
-	// get all the VCD files according to the seacrh paths
-	char searchPaths[512];
-	g_pFullFileSystem->GetSearchPath( "GAME", false, searchPaths, sizeof( searchPaths ) );
-	char *pPath = strtok( searchPaths, ";" );
-	while ( pPath )
+	// get all the VCD files according to the search paths
+	// I wonder if the search would work if I left off the asterisk?
+	vcdDirQueue[vcdDirQueue.AddToTail()] = "scenes/*";
+	while( !vcdDirQueue.IsEmpty() )
 	{
-		int currentCount = vcdFileList.Count();
+		char path[MAX_PATH];
+		V_strncpy(path, vcdDirQueue[0], sizeof(path));
+		V_strncat(path, "/*.vcd", sizeof(path));
+		vcdDirQueue.FastRemove( 0 );
 
-		char szPath[MAX_PATH];
-		V_ComposeFileName( pPath, "scenes/*.vcd", szPath, sizeof( szPath ) );
+		// Debug message to determine whether I've doubled up on slashes
+		//  with the strncat
+		DevMsg( 2, "NOPEY, YOUR SPEW HAS ARRIVED: %s", path );
 
-		scriptlib->FindFiles( szPath, true, vcdFileList );
+		// i just realized that *.vcd probably won't match directories
+		// gah
+		// remove the *.vcd, and manual filter? it works, i guess..
+		// just drop support for subdirectories and hope no-one noticed? gross.
+#warning "nopey is an idiot and hasn't finished CreateSceneImageFile"
 
-		Msg( "Scenes: Searching '%s' - Found %d scenes.\n", szPath, vcdFileList.Count() - currentCount );
+		FileFindHandle_t pHandle;
+		for (
+			const char *file = g_pFullFileSystem->FindFirstEx(path, "GAME", &pHandle);
+			file;
+			file = g_pFullFileSystem->FindNext( pHandle )
+		) {
+			int i = vcdFileList.AddToTail();
+			vcdFileList[i] = file;
+		}
 
-		pPath = strtok( NULL, ";" );
+		g_pFullFileSystem->FindClose(pHandle);
 	}
 
 	if ( !vcdFileList.Count() )
@@ -322,7 +339,7 @@ bool CSceneImage::CreateSceneImageFile( CUtlBuffer &targetBuffer, char const *pc
 	bool bGameIsTF = V_stristr( pchModPath, "\\tf" ) != NULL;
 	for ( int i=0; i<vcdFileList.Count(); i++ )
 	{
-		const char *pFilename = vcdFileList[i].fileName.String();
+		const char *pFilename = vcdFileList[i].String();
 		const char *pSceneName = V_stristr( pFilename, "scenes\\" );
 		if ( !pSceneName )
 		{

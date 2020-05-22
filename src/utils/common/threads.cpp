@@ -13,7 +13,16 @@
 
 #define	USED
 
+#ifdef _WIN32
 #include <windows.h>
+#elif defined(_POSIX)
+#include <pthread.h>
+#include <unistd.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+#else
+#error "Tool threadpool hasn't been implemented for your platform."
+#endif
 #include "cmdlib.h"
 #define NO_THREAD_NAMES
 #include "threads.h"
@@ -40,7 +49,6 @@ qboolean		pacifier;
 qboolean	threaded;
 bool g_bLowPriorityThreads = false;
 
-HANDLE g_ThreadHandles[MAX_THREADS];
 
 
 
@@ -97,7 +105,7 @@ void RunThreadsOnIndividual (int workcnt, qboolean showpacifier, ThreadWorkerFn 
 	RunThreadsOn (workcnt, showpacifier, ThreadWorkerFunction);
 }
 
-
+#ifdef _WIN32
 /*
 ===================================================================
 
@@ -106,19 +114,10 @@ WIN32
 ===================================================================
 */
 
+HANDLE g_ThreadHandles[MAX_THREADS];
 int		numthreads = -1;
 CRITICAL_SECTION		crit;
 static int enter;
-
-
-class CCritInit
-{
-public:
-	CCritInit()
-	{
-		InitializeCriticalSection (&crit);
-	}
-} g_CritInit;
 
 
 
@@ -253,5 +252,164 @@ void RunThreadsOn( int workcnt, qboolean showpacifier, RunThreadsFn fn, void *pU
 		printf (" (%i)\n", end-start);
 	}
 }
+#elif defined(_POSIX)
+/*
+===================================================================
+
+POSIX
+
+===================================================================
+*/
+
+pthread_t g_ThreadHandles[MAX_THREADS];
+int		numthreads = -1;
+static pthread_mutex_t crit =  PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+static int enter;
 
 
+
+
+void SetLowPriority()
+{
+    setpriority(PRIO_PROCESS, 0, 19);
+}
+
+
+void ThreadSetDefault (void)
+{
+	if (numthreads == -1)	// not set manually
+	{
+		numthreads = sysconf(_SC_NPROCESSORS_ONLN);
+		if (numthreads < 1 || numthreads > 32)
+			numthreads = 1;
+	}
+
+	Msg ("%i threads\n", numthreads);
+}
+
+
+void ThreadLock (void)
+{
+	if (!threaded)
+		return;
+	pthread_mutex_lock( &crit );
+	if (enter)
+		Error ("Recursive ThreadLock\n");
+	enter = 1;
+}
+
+void ThreadUnlock (void)
+{
+	if (!threaded)
+		return;
+	if (!enter)
+		Error ("ThreadUnlock without lock\n");
+	enter = 0;
+
+	pthread_mutex_unlock( &crit );
+}
+
+
+// This runs in the thread and dispatches a RunThreadsFn call.
+void *InternalRunThreadsFn( void *pParameter )
+{
+	CRunThreadsData *pData = (CRunThreadsData*)pParameter;
+	pData->m_Fn( pData->m_iThread, pData->m_pUserData );
+	return nullptr;
+}
+
+
+void RunThreads_Start( RunThreadsFn fn, void *pUserData, ERunThreadsPriority ePriority )
+{
+	Assert( numthreads > 0 );
+	threaded = true;
+
+	if ( numthreads > MAX_TOOL_THREADS )
+		numthreads = MAX_TOOL_THREADS;
+
+	for ( int i=0; i < numthreads ;i++ )
+	{
+		g_RunThreadsData[i].m_iThread = i;
+		g_RunThreadsData[i].m_pUserData = pUserData;
+		g_RunThreadsData[i].m_Fn = fn;
+
+		DWORD dwDummy;
+		pthread_create(
+			&g_ThreadHandles[i],
+			nullptr,
+			InternalRunThreadsFn,
+			&g_RunThreadsData[i]);
+		
+
+		if ( ePriority == k_eRunThreadsPriority_UseGlobalState )
+		{
+			if( g_bLowPriorityThreads ) {
+				pthread_attr_t thAttr;
+				int policy = 0;
+				int min_prio_for_policy = 0;
+
+				pthread_attr_init(&thAttr);
+				pthread_attr_getschedpolicy(&thAttr, &policy);
+				min_prio_for_policy = sched_get_priority_min(policy);
+
+
+    			pthread_attr_destroy(&thAttr);
+				pthread_setschedprio( g_ThreadHandles[i], min_prio_for_policy );
+			}
+		}
+		else if ( ePriority == k_eRunThreadsPriority_Idle )
+		{
+			pthread_setschedprio( g_ThreadHandles[i], 0 );
+		}
+	}
+}
+
+
+void RunThreads_End()
+{
+	for ( int i=0; i < numthreads; i++ ) {
+		pthread_join( g_ThreadHandles[i], nullptr );
+
+	}
+
+	threaded = false;
+}
+	
+
+/*
+=============
+RunThreadsOn
+=============
+*/
+void RunThreadsOn( int workcnt, qboolean showpacifier, RunThreadsFn fn, void *pUserData )
+{
+	int		start, end;
+
+	start = Plat_FloatTime();
+	dispatch = 0;
+	workcount = workcnt;
+	StartPacifier("");
+	pacifier = showpacifier;
+
+#ifdef _PROFILE
+	threaded = false;
+	(*func)( 0 );
+	return;
+#endif
+
+	
+	RunThreads_Start( fn, pUserData );
+	RunThreads_End();
+
+
+	end = Plat_FloatTime();
+	if (pacifier)
+	{
+		EndPacifier(false);
+		printf (" (%i)\n", end-start);
+	}
+}
+
+#else
+// ... already errored at the top
+#endif
