@@ -389,8 +389,7 @@ void CRTFBuilder::normal()
 	strike(false);
 }
 
-
-static DWORD CALLBACK EditStreamCallBack(DWORD dwCookie, LPBYTE pbBuff, LONG cb, LONG *pcb)
+static DWORD CALLBACK EditStreamCallBack(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG *pcb)
 {
 	CString *pstr = (CString *)dwCookie;
 
